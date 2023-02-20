@@ -1,0 +1,62 @@
+// import measures
+var measures = ee.Image('measures_velocity_ase_clip_c')
+// import pgc mosaic
+
+var REMA = ee.Image("UMN/PGC/REMA/V1_1/8m")
+
+// import icesat2 dhdt
+var icesatdhdt = ee.Image('ais_grounded_ase')
+
+
+var slope = ee.Terrain.slope(REMA)
+// remove all about 20 degrees
+var clipped = slope.lte(20)
+// import bedrock binary mask
+var bedrock = ee.Image('ase_bedrock_2020_50')
+
+
+var i01m1 = measures.lte(1).and(
+          icesatdhdt.lte(-0.1).lte(0.1)).and(clipped);
+var i01m5 = measures.lte(5).and(
+          icesatdhdt.lte(-0.1).lte(0.1)).and(clipped);
+var i01m10 = measures.lte(10).and(
+          icesatdhdt.lte(-0.1).lte(0.1)).and(clipped); 
+var i025m1 = measures.lte(1).and(
+          icesatdhdt.lte(-0.25).lte(0.25)).and(clipped);
+var i025m5 = measures.lte(5).and(
+          icesatdhdt.lte(-0.25).lte(0.25)).and(clipped);          
+var i025m10 = measures.lte(10).and(
+          icesatdhdt.lte(-0.25).lte(0.25)).and(clipped);          
+var i05m1 = measures.lte(1).and(
+          icesatdhdt.lte(-0.5).lte(0.5)).and(clipped);    
+var i05m5 = measures.lte(5).and(
+          icesatdhdt.lte(-0.5).lte(0.5)).and(clipped); 
+var i05m10 = measures.lte(10).and(
+          icesatdhdt.lte(-0.5).lte(0.5)).and(clipped); 
+          
+
+
+var rema_i01m1 = REMA.updateMask(i01m1)
+var rema_i01m5 = REMA.updateMask(i01m5)
+var rema_i01m10 = REMA.updateMask(i01m10)
+var rema_i025m1 = REMA.updateMask(i025m1)
+var rema_i025m5 = REMA.updateMask(i025m5)
+var rema_i025m10 = REMA.updateMask(i025m10)
+var rema_i05m1 = REMA.updateMask(i05m1)
+var rema_i05m5 = REMA.updateMask(i05m5)
+var rema_i05m10 = REMA.updateMask(i05m10)
+
+var rema_bedrock_loc = REMA.updateMask(bedrock)
+Map.addLayer(rema_i05m10)
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+  image: i05m10,
+  description: 'mask_i05m10',
+  scale: 30,
+  maxPixels: 961709464,
+  region: geometry
+});
+
+
+
